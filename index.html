@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Integrated Practice Quiz</title>
+
+<style>
+body{font-family:Arial;background:#f4f6fb;margin:0}
+header{background:#3f51b5;color:#fff;padding:15px;text-align:center}
+.container{padding:15px}
+.card{background:#fff;padding:15px;border-radius:10px;margin-bottom:15px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+button{width:100%;padding:12px;margin-top:10px;border:none;border-radius:6px;background:#3f51b5;color:white;font-size:16px}
+button.secondary{background:#607d8b}
+.option{background:#e8eaf6;padding:10px;margin:8px 0;border-radius:6px}
+.option:hover{background:#c5cae9}
+.hidden{display:none}
+.timer{font-weight:bold;color:#e53935;text-align:right}
+.correct{color:green}
+.wrong{color:red}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>Integrated Practice Quiz</h2>
+</header>
+
+<div class="container">
+
+<!-- HOME -->
+<div id="home" class="card">
+<h3>Select Practice</h3>
+<button onclick="openSettings('square')">Squares</button>
+<button onclick="openSettings('cube')">Cubes</button>
+<button onclick="openSettings('table')">Tables</button>
+<button onclick="openSettings('power')">Powers</button>
+<button onclick="openSettings('opposite')">Opposite Alphabet</button>
+<button onclick="openSettings('position')">Alphabet Position</button>
+<button onclick="openSettings('percent')">Percentage → Fraction</button>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings" class="card hidden">
+<h3 id="topicTitle"></h3>
+
+<label>No. of Questions</label>
+<select id="qCount">
+<option>10</option><option>20</option><option>30</option>
+</select>
+
+<label>From</label>
+<input type="number" id="fromVal">
+
+<label>To</label>
+<input type="number" id="toVal">
+
+<button onclick="startQuiz()">Start Quiz</button>
+<button class="secondary" onclick="goHome()">Back</button>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="card hidden">
+<div class="timer">Time Left: <span id="time"></span>s</div>
+<h3 id="question"></h3>
+<div id="options"></div>
+<button onclick="submitQuiz()">Submit Quiz</button>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="card hidden">
+<h3>Result Summary</h3>
+<p id="stats"></p>
+<div id="solutions"></div>
+<button onclick="restartQuiz()">Restart Quiz</button>
+<button class="secondary" onclick="goHome()">Home</button>
+</div>
+
+</div>
+
+<script>
+let topic,questions=[],userAns=[],index=0,score=0,timeLeft,timer;
+
+function goHome(){
+home.classList.remove("hidden");
+settings.classList.add("hidden");
+quiz.classList.add("hidden");
+result.classList.add("hidden");
+}
+
+function openSettings(t){
+topic=t;
+home.classList.add("hidden");
+settings.classList.remove("hidden");
+topicTitle.innerText="Settings - "+t.toUpperCase();
+}
+
+function startQuiz(){
+let count=+qCount.value;
+let from=+fromVal.value;
+let to=+toVal.value;
+questions=[];userAns=[];index=0;score=0;
+
+for(let i=0;i<count;i++)questions.push(generateQuestion(from,to));
+
+settings.classList.add("hidden");
+quiz.classList.remove("hidden");
+
+timeLeft=count*10;
+time.innerText=timeLeft;
+timer=setInterval(()=>{
+timeLeft--;
+time.innerText=timeLeft;
+if(timeLeft<=0)submitQuiz();
+},1000);
+
+showQuestion();
+}
+
+function generateQuestion(from,to){
+let q={},a,b,L="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+if(topic=="square"){a=r(from,to);q.q=`Square of ${a}?`;q.a=a*a;q.o=s([q.a,q.a+2,q.a-2,q.a+4]);}
+if(topic=="cube"){a=r(from,to);q.q=`Cube of ${a}?`;q.a=a*a*a;q.o=s([q.a,q.a+3,q.a-3,q.a+6]);}
+if(topic=="table"){a=r(from,to);b=r(1,10);q.q=`${a} × ${b}?`;q.a=a*b;q.o=s([q.a,q.a+1,q.a-1,q.a+2]);}
+if(topic=="power"){a=r(from,to);b=r(1,10);q.q=`${a}<sup>${b}</sup>?`;q.a=Math.pow(a,b);q.o=s([q.a,q.a+1,q.a-1,q.a+2]);}
+if(topic=="opposite"){a=r(0,25);q.q=`Opposite of ${L[a]}?`;q.a=L[25-a];q.o=s([q.a,L[a],L[r(0,25)],L[r(0,25)]]);}
+if(topic=="position"){a=r(0,25);q.q=`Position of ${L[a]}?`;q.a=a+1;q.o=s([q.a,q.a+1,q.a-1,q.a+2]);}
+if(topic=="percent"){a=r(from,to);q.q=`${a}% = ?`;q.a=`${a}/100`;q.o=s([`${a}/100`,`1/${100/a}`,`${a}/10`,`None`]);}
+return q;
+}
+
+function showQuestion(){
+if(index>=questions.length)return submitQuiz();
+let q=questions[index];
+question.innerHTML=q.q;
+options.innerHTML="";
+q.o.forEach(o=>{
+let d=document.createElement("div");
+d.className="option";
+d.innerHTML=o;
+d.onclick=()=>{userAns[index]=o;index++;showQuestion();}
+options.appendChild(d);
+});
+}
+
+function submitQuiz(){
+clearInterval(timer);
+quiz.classList.add("hidden");
+result.classList.remove("hidden");
+
+let correct=0;
+solutions.innerHTML="";
+questions.forEach((q,i)=>{
+if(userAns[i]==q.a)correct++;
+let div=document.createElement("div");
+div.innerHTML=`<p>${i+1}. ${q.q}<br>
+Your: <b class="${userAns[i]==q.a?'correct':'wrong'}">${userAns[i]}</b><br>
+Correct: <b class="correct">${q.a}</b></p>`;
+solutions.appendChild(div);
+});
+
+let percent=((correct/questions.length)*100).toFixed(2);
+stats.innerHTML=`Total: ${questions.length}<br>
+Correct: ${correct}<br>
+Incorrect: ${questions.length-correct}<br>
+Percentage: ${percent}%`;
+}
+
+function restartQuiz(){
+result.classList.add("hidden");
+settings.classList.remove("hidden");
+}
+
+function r(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function s(a){return a.sort(()=>Math.random()-0.5)}
+</script>
+
+</body>
+  </html>
