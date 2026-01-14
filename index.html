@@ -1,180 +1,378 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Integrated Practice Quiz</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Practice Pro - Professional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --glass: rgba(255, 255, 255, 0.4);
+            --bookmania: 'Lora', serif;
+            --calibri: 'Calibri', 'Trebuchet MS', sans-serif;
+            --blue: #3b82f6; --orange: #f59e0b; --green: #10b981; --pink: #ec4899; --danger: #ef4444;
+        }
 
-<style>
-body{font-family:Arial;background:#f4f6fb;margin:0}
-header{background:#3f51b5;color:#fff;padding:15px;text-align:center}
-.container{padding:15px}
-.card{background:#fff;padding:15px;border-radius:10px;margin-bottom:15px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
-button{width:100%;padding:12px;margin-top:10px;border:none;border-radius:6px;background:#3f51b5;color:white;font-size:16px}
-button.secondary{background:#607d8b}
-.option{background:#e8eaf6;padding:10px;margin:8px 0;border-radius:6px}
-.option:hover{background:#c5cae9}
-.hidden{display:none}
-.timer{font-weight:bold;color:#e53935;text-align:right}
-.correct{color:green}
-.wrong{color:red}
-</style>
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body { margin: 0; padding: 15px; font-family: 'Poppins', sans-serif; background: var(--bg-gradient); min-height: 100vh; display: flex; justify-content: center; align-items: center; color: #1e293b; }
+        
+        .app-container { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.6); border-radius: 40px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); width: 100%; max-width: 500px; text-align: center; min-height: 80vh; position: relative; }
+        .hidden { display: none !important; }
+
+        /* Headers */
+        h1.main-title { font-size: 2.2rem; color: #1e3a8a; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+        h1.quiz-title { font-family: var(--bookmania); font-size: 2rem; margin-bottom: 25px; }
+
+        /* Menu */
+        .db-grid { display: flex; flex-direction: column; gap: 12px; }
+        .subject-btn { background: white; border: none; border-bottom: 5px solid #cbd5e1; border-radius: 18px; padding: 18px; font-family: var(--calibri); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; color: #334155; text-align: center;}
+        .subject-btn:active { transform: translateY(3px); border-bottom-width: 1px; }
+
+        /* Config Cards */
+        .white-card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .label-text { font-family: var(--calibri); font-weight: bold; color: #64748b; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 12px; display: block; text-align: left; }
+        .styled-input { border: 2px solid #f1f5f9; border-radius: 12px; padding: 10px; font-family: var(--calibri); width: 80px; text-align: center; font-size: 1.2rem; outline: none; }
+        .slider { width: 100%; accent-color: var(--blue); cursor: pointer; }
+
+        /* Quiz UI */
+        .timer-pill { background: white; padding: 8px 20px; border-radius: 50px; display: inline-flex; align-items: center; gap: 8px; color: #ef4444; font-family: var(--calibri); font-weight: bold; border: 1px solid #fee2e2; }
+        .q-text { font-family: var(--bookmania); font-size: 1.4rem; font-weight: 700; margin: 15px 0; line-height: 1.3; text-align: left;}
+        
+        /* Option Selection Highlight */
+        .opt-btn { background: white; border: 2px solid #f1f5f9; border-radius: 15px; padding: 16px; font-family: var(--bookmania); text-align: left; font-size: 1.1rem; cursor: pointer; width: 100%; margin-bottom: 10px; color: #334155; }
+        .opt-btn.selected { border-color: var(--blue); background: #eff6ff; color: var(--blue); font-weight: bold; }
+
+        .primary-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: white; border-bottom: 6px solid #1e3a8a; font-family: var(--calibri); font-size: 1.3rem; cursor: pointer; font-weight: bold; color: #1e3a8a; }
+        .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-prev { background: var(--orange); border: none; padding: 14px; border-radius: 15px; font-family: var(--calibri); font-weight: bold; color: white; cursor: pointer; border-bottom: 4px solid #b45309; }
+        .btn-next { background: var(--green); border: none; padding: 14px; border-radius: 15px; font-family: var(--calibri); font-weight: bold; color: white; cursor: pointer; border-bottom: 4px solid #065f46; }
+        .btn-pause { background: #64748b; border: none; padding: 10px 18px; border-radius: 15px; font-family: var(--calibri); font-weight: bold; color: white; cursor: pointer; border-bottom: 3px solid #334155; }
+
+        /* Result Specific */
+        .res-pill { background: white; padding: 15px; border-radius: 20px; flex: 1; border-bottom: 4px solid #eee; }
+        .res-val { display: block; font-size: 1.5rem; font-weight: bold; font-family: var(--calibri); }
+
+        #pause-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; border-radius: 40px; }
+        .mode-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .home-icon-btn { cursor: pointer; color: var(--blue); font-weight: bold; margin-bottom: 20px; display: inline-block; text-align: left; width: 100%; }
+    </style>
 </head>
-
 <body>
 
-<header>
-<h2>Integrated Practice Quiz</h2>
-</header>
+<div class="app-container">
+    
+    <div id="scr-home">
+        <h1 class="main-title">Banking Practice</h1>
+        <p style="color: #64748b; margin-bottom: 30px;">Daily Speed Drills by SBR </p>
+        <div class="db-grid">
+            <button class="subject-btn" style="border-bottom-color: #8b5cf6" onclick="showCalcMenu()">🧮 CALCULATION</button>
+            <button class="subject-btn" style="border-bottom-color: var(--blue)" onclick="openConfig('Square')">2️⃣ SQUARES</button>
+            <button class="subject-btn" style="border-bottom-color: var(--pink)" onclick="openConfig('Cube')">3️⃣ CUBES</button>
+            <button class="subject-btn" style="border-bottom-color: var(--green)" onclick="openConfig('Table')">📊 TABLES</button>
+            <button class="subject-btn" style="border-bottom-color: var(--orange)" onclick="openConfig('Power')">🔢 POWERS</button>
+            <button class="subject-btn" style="border-bottom-color: #ef4444" onclick="openConfig('Alphabet')">🆎 ALPHABET</button>
+            <button class="subject-btn" style="border-bottom-color: #ec4899" onclick="openConfig('Percentage')">💯 PERCENTAGE</button>
+            <button class="subject-btn" style="border-bottom-color: #06b6d4" onclick="openConfig('Mensuration')">📐 MENSURATION</button>
+        </div>
+    </div>
 
-<div class="container">
+    <div id="scr-calc-menu" class="hidden">
+        <div class="home-icon-btn" onclick="goHome()"> 🏠 Back to Home</div>
+        <h1 class="quiz-title">CALCULATION 🧮</h1>
+        <div class="db-grid">
+            <button class="subject-btn" style="border-bottom-color: var(--blue)" onclick="openConfig('Addition')">Addition ➕</button>
+            <button class="subject-btn" style="border-bottom-color: var(--danger)" onclick="openConfig('Subtraction')">Subtraction ➖</button>
+            <button class="subject-btn" style="border-bottom-color: var(--orange)" onclick="openConfig('Multiplication')">Multiplication ✖️</button>
+            <button class="subject-btn" style="border-bottom-color: var(--green)" onclick="openConfig('Division')">Division ➗</button>
+        </div>
+    </div>
 
-<!-- HOME -->
-<div id="home" class="card">
-<h3>Select Practice</h3>
-<button onclick="openSettings('square')">Squares</button>
-<button onclick="openSettings('cube')">Cubes</button>
-<button onclick="openSettings('table')">Tables</button>
-<button onclick="openSettings('power')">Powers</button>
-<button onclick="openSettings('opposite')">Opposite Alphabet</button>
-<button onclick="openSettings('position')">Alphabet Position</button>
-<button onclick="openSettings('percent')">Percentage → Fraction</button>
-</div>
+    <div id="scr-config" class="hidden">
+        <div class="home-icon-btn" onclick="goHome()"> 🏠 Back to Home</div>
+        <h1 class="quiz-title" id="cfg-title">Title</h1>
 
-<!-- SETTINGS -->
-<div id="settings" class="card hidden">
-<h3 id="topicTitle"></h3>
+        <label class="label-text">Number of Questions</label>
+        <div class="white-card">
+            <input type="range" min="10" max="100" step="10" value="20" class="slider" id="q-slider" oninput="document.getElementById('q-val').innerText = this.value">
+            <div id="q-val" style="font-family: var(--calibri); color: var(--orange); font-size: 1.5rem; font-weight: bold; margin-top: 10px;">20</div>
+        </div>
 
-<label>No. of Questions</label>
-<select id="qCount">
-<option>10</option><option>20</option><option>30</option>
-</select>
+        <div id="range-settings">
+            <label class="label-text">Range (Digits for Calc)</label>
+            <div class="white-card">
+                <div style="display:flex; justify-content:center; gap:10px; align-items:center;">
+                    <small>MIN</small> <input type="number" id="cfg-from" class="styled-input" value="1">
+                    <small>MAX</small> <input type="number" id="cfg-to" class="styled-input" value="1000">
+                </div>
+            </div>
+        </div>
 
-<label>From</label>
-<input type="number" id="fromVal">
+        <div id="alpha-settings" class="hidden">
+            <label class="label-text">Alphabet Mode</label>
+            <div class="mode-row">
+                <button class="subject-btn" id="btn-alpha-pos" onclick="setAlphaMode('pos')">Position (A-1)</button>
+                <button class="subject-btn" id="btn-alpha-opp" onclick="setAlphaMode('opp')">Opposite (A-Z)</button>
+            </div>
+        </div>
 
-<label>To</label>
-<input type="number" id="toVal">
+        <div id="mens-settings" class="hidden">
+            <label class="label-text">Category</label>
+            <div class="mode-row">
+                <button class="subject-btn" id="btn-m2d" onclick="setMens('2d')">2D Formulas</button>
+                <button class="subject-btn" id="btn-m3d" onclick="setMens('3d')">3D Formulas</button>
+            </div>
+        </div>
 
-<button onclick="startQuiz()">Start Quiz</button>
-<button class="secondary" onclick="goHome()">Back</button>
-</div>
+        <button class="primary-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
 
-<!-- QUIZ -->
-<div id="quiz" class="card hidden">
-<div class="timer">Time Left: <span id="time"></span>s</div>
-<h3 id="question"></h3>
-<div id="options"></div>
-<button onclick="submitQuiz()">Submit Quiz</button>
-</div>
+    <div id="scr-quiz" class="hidden">
+        <div id="pause-overlay" class="hidden">
+            <h1 class="quiz-title">PAUSED</h1>
+            <button class="primary-btn" style="width: 220px; margin-bottom: 12px; border-bottom-color: var(--green);" onclick="resumeQuiz()">RESUME</button>
+            <button class="primary-btn" style="width: 220px; border-bottom-color: #64748b; color: #64748b;" onclick="goHome()">HOME</button>
+        </div>
 
-<!-- RESULT -->
-<div id="result" class="card hidden">
-<h3>Result Summary</h3>
-<p id="stats"></p>
-<div id="solutions"></div>
-<button onclick="restartQuiz()">Restart Quiz</button>
-<button class="secondary" onclick="goHome()">Home</button>
-</div>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div class="timer-pill">⏱️ <span id="timer">00:00</span></div>
+            <button class="btn-pause" onclick="pauseQuiz()">Pause</button>
+        </div>
+        
+        <div class="white-card" style="text-align: left;">
+            <small style="color: #94a3b8; font-family: var(--calibri); font-weight: bold;" id="q-progress">Q 1/20</small>
+            <div class="q-text" id="q-display">...</div>
+        </div>
+
+        <div id="opt-container"></div>
+
+        <div class="nav-grid">
+            <button class="btn-prev" onclick="navQ('prev')">PREVIOUS</button>
+            <button class="btn-next" onclick="navQ('next')">NEXT</button>
+        </div>
+        <button class="primary-btn" style="margin-top: 15px; background: #eff6ff; border-bottom-color: var(--blue);" onclick="finishQuiz()">SUBMIT TEST</button>
+    </div>
+
+    <div id="scr-result" class="hidden">
+        <div id="res-emoji" style="font-size: 3.5rem;">🎉</div>
+        <h1 class="quiz-title" id="res-rating">Excellent</h1>
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+            <div class="res-pill"><span class="res-val" id="res-cor" style="color: var(--green)">0</span><small>CORRECT</small></div>
+            <div class="res-pill"><span class="res-val" id="res-inc" style="color: #ef4444">0</span><small>WRONG</small></div>
+            <div class="res-pill"><span class="res-val" id="res-skp" style="color: #64748b">0</span><small>SKIPPED</small></div>
+        </div>
+
+        <div class="white-card" style="display: grid; grid-template-columns: 1fr 1fr; gap:10px; font-family: var(--calibri);">
+            <div>ACCURACY<br><strong id="res-acc" style="color: var(--blue); font-size: 1.2rem;">0%</strong></div>
+            <div>TIME<br><strong id="res-time" style="font-size: 1.2rem;">00:00</strong></div>
+            <div style="grid-column: span 2; border-top: 1px solid #eee; padding-top: 10px;">AVG TIME/QUE<br><strong id="res-avg" style="color: var(--pink)">0s</strong></div>
+        </div>
+
+        <div class="nav-grid">
+            <button class="btn-prev" style="background:white; color:#1e293b; border: 1px solid #ddd; border-bottom: 4px solid #ccc;" onclick="goHome()">HOME</button>
+            <button class="btn-next" style="background:var(--blue); border-bottom-color: #1e3a8a;" onclick="toggleSols()">SOLUTIONS</button>
+        </div>
+        <button class="primary-btn" onclick="restartQuiz()" style="margin-top: 15px; background: #f8fafc;">RESTART</button>
+
+        <div id="sol-area" class="hidden" style="margin-top: 30px; text-align: left;">
+            <div id="sol-list"></div>
+        </div>
+    </div>
 
 </div>
 
 <script>
-let topic,questions=[],userAns=[],index=0,score=0,timeLeft,timer;
+    let mode = ''; let questions = []; let currentIdx = 0;
+    let timer; let seconds = 0; let isPaused = false;
+    let mensCategory = '2d'; let alphaMode = 'pos';
+    let lastQ = "";
 
-function goHome(){
-home.classList.remove("hidden");
-settings.classList.add("hidden");
-quiz.classList.add("hidden");
-result.classList.add("hidden");
-}
+    const percDB = [
+        {p: "100%", f: "1/1"}, {p: "50%", f: "1/2"}, {p: "33.33%", f: "1/3"}, {p: "25%", f: "1/4"},
+        {p: "20%", f: "1/5"}, {p: "16.66%", f: "1/6"}, {p: "14.28%", f: "1/7"}, {p: "12.5%", f: "1/8"}
+    ];
 
-function openSettings(t){
-topic=t;
-home.classList.add("hidden");
-settings.classList.remove("hidden");
-topicTitle.innerText="Settings - "+t.toUpperCase();
-}
+    const mensDB = {
+        "2d": [{f:"πr²", q:"Area of Circle"}, {f:"2πr", q:"Circumference"}, {f:"s²", q:"Area of Square"}],
+        "3d": [{f:"S³", q:"Volume of Cube"}, {f:"πr²h", q:"Volume of Cylinder"}]
+    };
 
-function startQuiz(){
-let count=+qCount.value;
-let from=+fromVal.value;
-let to=+toVal.value;
-questions=[];userAns=[];index=0;score=0;
+    function goHome() {
+        clearInterval(timer);
+        document.querySelectorAll('.app-container > div').forEach(d => d.classList.add('hidden'));
+        document.getElementById('scr-home').classList.remove('hidden');
+    }
 
-for(let i=0;i<count;i++)questions.push(generateQuestion(from,to));
+    function showCalcMenu() {
+        document.getElementById('scr-home').classList.add('hidden');
+        document.getElementById('scr-calc-menu').classList.remove('hidden');
+    }
 
-settings.classList.add("hidden");
-quiz.classList.remove("hidden");
+    function openConfig(m) {
+        mode = m;
+        document.querySelectorAll('.app-container > div').forEach(d => d.classList.add('hidden'));
+        document.getElementById('scr-config').classList.remove('hidden');
+        document.getElementById('cfg-title').innerText = m.toUpperCase();
+        
+        document.getElementById('range-settings').classList.toggle('hidden', ['Percentage', 'Alphabet', 'Mensuration'].includes(m));
+        document.getElementById('alpha-settings').classList.toggle('hidden', m !== 'Alphabet');
+        document.getElementById('mens-settings').classList.toggle('hidden', m !== 'Mensuration');
 
-timeLeft=count*10;
-time.innerText=timeLeft;
-timer=setInterval(()=>{
-timeLeft--;
-time.innerText=timeLeft;
-if(timeLeft<=0)submitQuiz();
-},1000);
+        // Set default values for different calculation types
+        if(m === 'Division') {
+            document.getElementById('cfg-from').value = 1;
+            document.getElementById('cfg-to').value = 9999;
+        } else if(['Addition','Subtraction','Multiplication'].includes(m)) {
+            document.getElementById('cfg-to').value = 1000;
+        } else {
+            document.getElementById('cfg-to').value = 30;
+        }
+    }
 
-showQuestion();
-}
+    function startQuiz() {
+        generateQuestions();
+        currentIdx = 0; seconds = 0; isPaused = false;
+        document.getElementById('scr-config').classList.add('hidden');
+        document.getElementById('scr-quiz').classList.remove('hidden');
+        startTimer();
+        showQuestion();
+    }
 
-function generateQuestion(from,to){
-let q={},a,b,L="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-if(topic=="square"){a=r(from,to);q.q=`Square of ${a}?`;q.a=a*a;q.o=s([q.a,q.a+2,q.a-2,q.a+4]);}
-if(topic=="cube"){a=r(from,to);q.q=`Cube of ${a}?`;q.a=a*a*a;q.o=s([q.a,q.a+3,q.a-3,q.a+6]);}
-if(topic=="table"){a=r(from,to);b=r(1,10);q.q=`${a} × ${b}?`;q.a=a*b;q.o=s([q.a,q.a+1,q.a-1,q.a+2]);}
-if(topic=="power"){a=r(from,to);b=r(1,10);q.q=`${a}<sup>${b}</sup>?`;q.a=Math.pow(a,b);q.o=s([q.a,q.a+1,q.a-1,q.a+2]);}
-if(topic=="opposite"){a=r(0,25);q.q=`Opposite of ${L[a]}?`;q.a=L[25-a];q.o=s([q.a,L[a],L[r(0,25)],L[r(0,25)]]);}
-if(topic=="position"){a=r(0,25);q.q=`Position of ${L[a]}?`;q.a=a+1;q.o=s([q.a,q.a+1,q.a-1,q.a+2]);}
-if(topic=="percent"){a=r(from,to);q.q=`${a}% = ?`;q.a=`${a}/100`;q.o=s([`${a}/100`,`1/${100/a}`,`${a}/10`,`None`]);}
-return q;
-}
+    function startTimer() {
+        timer = setInterval(() => { 
+            if(!isPaused) { 
+                seconds++; 
+                document.getElementById('timer').innerText = new Date(seconds * 1000).toISOString().substr(14, 5); 
+            }
+        }, 1000);
+    }
 
-function showQuestion(){
-if(index>=questions.length)return submitQuiz();
-let q=questions[index];
-question.innerHTML=q.q;
-options.innerHTML="";
-q.o.forEach(o=>{
-let d=document.createElement("div");
-d.className="option";
-d.innerHTML=o;
-d.onclick=()=>{userAns[index]=o;index++;showQuestion();}
-options.appendChild(d);
-});
-}
+    function pauseQuiz() { isPaused = true; document.getElementById('pause-overlay').classList.remove('hidden'); }
+    function resumeQuiz() { isPaused = false; document.getElementById('pause-overlay').classList.add('hidden'); }
 
-function submitQuiz(){
-clearInterval(timer);
-quiz.classList.add("hidden");
-result.classList.remove("hidden");
+    function getRandomRange(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 
-let correct=0;
-solutions.innerHTML="";
-questions.forEach((q,i)=>{
-if(userAns[i]==q.a)correct++;
-let div=document.createElement("div");
-div.innerHTML=`<p>${i+1}. ${q.q}<br>
-Your: <b class="${userAns[i]==q.a?'correct':'wrong'}">${userAns[i]}</b><br>
-Correct: <b class="correct">${q.a}</b></p>`;
-solutions.appendChild(div);
-});
+    function generateQuestions() {
+        const count = parseInt(document.getElementById('q-slider').value);
+        const min = parseInt(document.getElementById('cfg-from').value);
+        const max = parseInt(document.getElementById('cfg-to').value);
+        questions = [];
 
-let percent=((correct/questions.length)*100).toFixed(2);
-stats.innerHTML=`Total: ${questions.length}<br>
-Correct: ${correct}<br>
-Incorrect: ${questions.length-correct}<br>
-Percentage: ${percent}%`;
-}
+        for(let i=0; i<count; i++) {
+            let q = '', a = '', opts = [];
+            let n1 = getRandomRange(min, max);
+            let n2 = getRandomRange(min, max);
 
-function restartQuiz(){
-result.classList.add("hidden");
-settings.classList.remove("hidden");
-}
+            if(mode === 'Addition') { q = `${n1} + ${n2} = ?`; a = (n1 + n2).toString(); }
+            else if(mode === 'Subtraction') { 
+                let big = Math.max(n1, n2); let small = Math.min(n1, n2);
+                q = `${big} - ${small} = ?`; a = (big - small).toString(); 
+            }
+            else if(mode === 'Multiplication') { q = `${n1} × ${n2} = ?`; a = (n1 * n2).toString(); }
+            else if(mode === 'Division') {
+                // Logic: 4-digit div 3-digit, 3-digit div 2-digit etc.
+                // We pick random digits for divisor and quotient to create the dividend
+                let divDigits = getRandomRange(1, 3);
+                let quoDigits = getRandomRange(1, 4 - (divDigits - 1));
+                let divisor = getRandomRange(Math.pow(10, divDigits-1), Math.pow(10, divDigits)-1);
+                let quotient = getRandomRange(Math.pow(10, quoDigits-1), Math.pow(10, quoDigits)-1);
+                let dividend = divisor * quotient;
+                q = `${dividend} ÷ ${divisor} = ?`; a = quotient.toString();
+            }
+            else if(mode === 'Square') { q = `Square of ${n1}?`; a = (n1*n1).toString(); }
+            else if(mode === 'Cube') { q = `Cube of ${n1}?`; a = (n1*n1*n1).toString(); }
+            else if(mode === 'Table') { let m = getRandomRange(1, 10); q = `${n1} x ${m} = ?`; a = (n1*m).toString(); }
+            else if(mode === 'Percentage') {
+                let item = percDB[getRandomRange(0, percDB.length-1)];
+                q = `What is the fraction of ${item.p}?`; a = item.f;
+            }
+            else if(mode === 'Alphabet') {
+                let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; let idx = getRandomRange(0, 25);
+                if(alphaMode === 'pos') { q = `Position of '${chars[idx]}'?`; a = (idx+1).toString(); }
+                else { q = `Opposite of '${chars[idx]}'?`; a = chars[25-idx]; }
+            }
+            else if(mode === 'Mensuration') {
+                let pool = mensCategory==='2d' ? mensDB["2d"] : mensDB["3d"];
+                let item = pool[getRandomRange(0, pool.length-1)];
+                q = `${item.f} is formula for:`; a = item.q;
+            }
 
-function r(a,b){return Math.floor(Math.random()*(b-a+1))+a}
-function s(a){return a.sort(()=>Math.random()-0.5)}
+            opts = [a];
+            while(opts.length < 4) {
+                let fake = (parseInt(a) + (getRandomRange(-10, 10))).toString();
+                if(mode==='Percentage') fake = percDB[getRandomRange(0, percDB.length-1)].f;
+                if(mode==='Mensuration') {
+                    let all = [...mensDB["2d"], ...mensDB["3d"]];
+                    fake = all[getRandomRange(0, all.length-1)].q;
+                }
+                if(!opts.includes(fake) && fake !== "" && parseInt(fake) !== -1) opts.push(fake);
+            }
+            questions.push({ q, a, opts: opts.sort(() => Math.random()-0.5), user: null });
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIdx];
+        document.getElementById('q-progress').innerText = `Q ${currentIdx+1} / ${questions.length}`;
+        document.getElementById('q-display').innerText = q.q;
+        const cont = document.getElementById('opt-container'); cont.innerHTML = '';
+        q.opts.forEach(o => {
+            const b = document.createElement('button'); b.className = `opt-btn ${q.user === o ? 'selected' : ''}`;
+            b.innerText = o; b.onclick = () => { q.user = o; showQuestion(); };
+            cont.appendChild(b);
+        });
+    }
+
+    function navQ(dir) {
+        if(dir === 'next' && currentIdx < questions.length - 1) { currentIdx++; showQuestion(); }
+        else if(dir === 'prev' && currentIdx > 0) { currentIdx--; showQuestion(); }
+    }
+
+    function finishQuiz() {
+        clearInterval(timer);
+        document.getElementById('scr-quiz').classList.add('hidden');
+        document.getElementById('scr-result').classList.remove('hidden');
+        
+        const cor = questions.filter(q => q.user === q.a).length;
+        const skp = questions.filter(q => q.user === null).length;
+        const acc = Math.round((cor/questions.length)*100);
+        
+        document.getElementById('res-cor').innerText = cor;
+        document.getElementById('res-inc').innerText = questions.length - cor - skp;
+        document.getElementById('res-skp').innerText = skp;
+        document.getElementById('res-acc').innerText = acc + "%";
+        document.getElementById('res-time').innerText = document.getElementById('timer').innerText;
+        document.getElementById('res-avg').innerText = (seconds/questions.length).toFixed(1) + "s";
+
+        // RESTORED EMOJI RATING SYSTEM
+        let r = '', e = '';
+        if(acc < 35) { r = 'Need Improvement'; e = '🔥'; }
+        else if(acc < 60) { r = 'Average'; e = '👍🏻'; }
+        else if(acc < 85) { r = 'Good Score'; e = '✌🏻'; }
+        else { r = 'Excellent'; e = '🎉'; }
+        document.getElementById('res-rating').innerText = r;
+        document.getElementById('res-emoji').innerText = e;
+    }
+
+    function toggleSols() {
+        const area = document.getElementById('sol-area'); area.classList.toggle('hidden');
+        document.getElementById('sol-list').innerHTML = questions.map((q, i) => `
+            <div style="padding:15px; background:white; border-radius:15px; margin-bottom:10px; border-left:5px solid ${q.user===q.a?'var(--green)':'#ef4444'}">
+                <strong>${i+1}. ${q.q}</strong><br>Correct: ${q.a} | Your: ${q.user || 'Skipped'}
+            </div>
+        `).join('');
+    }
+
+    function restartQuiz() {
+        document.getElementById('scr-result').classList.add('hidden');
+        openConfig(mode);
+    }
+    
+    function setAlphaMode(val) { alphaMode = val; startQuiz(); }
+    function setMens(val) { mensCategory = val; startQuiz(); }
 </script>
-
 </body>
-  </html>
+</html>
