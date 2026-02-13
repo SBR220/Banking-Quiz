@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Practice Pro - Professional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,600&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --glass: rgba(255, 255, 255, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.8);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --bookmania: 'Lora', serif;
+            --calibri: 'Calibri', 'Trebuchet MS', sans-serif;
+            --blue: #3b82f6; --orange: #f59e0b; --green: #10b981; --pink: #ec4899; --danger: #ef4444;
+            --accent-color: #6c5ce7;
+            --text-color: #333;
+        }
+
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body { margin: 0; padding: 15px; font-family: 'Poppins', sans-serif; background: var(--bg-gradient); min-height: 100vh; display: flex; justify-content: center; align-items: center; color: #1e293b; }
+        
+        .app-container { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.6); border-radius: 40px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); width: 100%; max-width: 500px; text-align: center; min-height: 80vh; position: relative; }
+        .hidden { display: none !important; }
+
+        /* Headers */
+        h1.main-title { font-size: 2.2rem; color: #1e3a8a; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+        h1.quiz-title { font-family: var(--bookmania); font-size: 2rem; margin-bottom: 25px; }
+
+        /* Menu */
+        .db-grid { display: flex; flex-direction: column; gap: 12px; }
+        .subject-btn { background: white; border: none; border-bottom: 5px solid #cbd5e1; border-radius: 18px; padding: 18px; font-family: var(--calibri); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; color: #334155; text-align: center;}
+        .subject-btn:active { transform: translateY(3px); border-bottom-width: 1px; }
+
+        /* Config Cards */
+        .white-card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .label-text { font-family: var(--calibri); font-weight: bold; color: #64748b; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 12px; display: block; text-align: left; }
+        .styled-input { border: 2px solid #f1f5f9; border-radius: 12px; padding: 10px; font-family: var(--calibri); width: 80px; text-align: center; font-size: 1.2rem; outline: none; }
+        .slider { width: 100%; accent-color: var(--blue); cursor: pointer; }
+
+        /* Quiz UI */
+        .timer-pill { background: white; padding: 8px 20px; border-radius: 50px; display: inline-flex; align-items: center; gap: 8px; color: #ef4444; font-family: var(--calibri); font-weight: bold; border: 1px solid #fee2e2; }
+        .q-text { font-family: var(--bookmania); font-size: 1.4rem; font-weight: 700; margin: 15px 0; line-height: 1.3; text-align: left;}
+        
+        /* Option Selection Highlight */
+        .opt-btn { background: white; border: 2px solid #f1f5f9; border-radius: 15px; padding: 16px; font-family: var(--bookmania); text-align: left; font-size: 1.1rem; cursor: pointer; width: 100%; margin-bottom: 10px; color: #334155; }
+        .opt-btn.selected { border-color: var(--blue); background: #eff6ff; color: var(--blue); font-weight: bold; }
+
+        .primary-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: white; border-bottom: 6px solid #1e3a8a; font-family: var(--calibri); font-size: 1.3rem; cursor: pointer; font-weight: bold; color: #1e3a8a; }
+        .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-prev { background: var(--orange); border: none; padding: 14px; border-radius: 15px; font-family: var(--calibri); font-weight: bold; color: white; cursor: pointer; border-bottom: 4px solid #b45309; }
+        .btn-next { background: var(--green); border: none; padding: 14px; border-radius: 15px; font-family: var(--calibri); font-weight: bold; color: white; cursor: pointer; border-bottom: 4px solid #065f46; }
+        .btn-pause { background: #64748b; border: none; padding: 10px 18px; border-radius: 15px; font-family: var(--calibri); font-weight: bold; color: white; cursor: pointer; border-bottom: 3px solid #334155; }
+
+        /* Result Specific */
+        .res-pill { background: white; padding: 15px; border-radius: 20px; flex: 1; border-bottom: 4px solid #eee; }
+        .res-val { display: block; font-size: 1.5rem; font-weight: bold; font-family: var(--calibri); }
+
+        #pause-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; border-radius: 40px; }
+        .mode-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .home-icon-btn { cursor: pointer; color: var(--blue); font-weight: bold; margin-bottom: 20px; display: inline-block; text-align: left; width: 100%; }
+
+        /* ============================================ */
+        /* MATH REFERENCE TABLES STYLES */
+        /* ============================================ */
+        
+        .math-tables-container {
+            width: 100%;
+            text-align: center;
+        }
+
+        .math-tables-container h1 {
+            margin-bottom: 25px;
+            color: #444;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            font-size: 1.8rem;
+        }
+
+        /* Glassy 3D Buttons for Math Tables */
+        .math-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .glass-btn {
+            position: relative;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--text-color);
+            background: var(--glass-bg);
+            border: var(--glass-border);
+            border-radius: 15px;
+            box-shadow: var(--glass-shadow);
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            transition: all 0.2s ease;
+            border-bottom: 5px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);
+        }
+
+        .glass-btn:active {
+            transform: translateY(2px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        .glass-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-bottom-color: rgba(0,0,0,0.3);
+        }
+
+        /* Display Area */
+        .display-area {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            padding: 20px;
+            min-height: 300px;
+            overflow: hidden;
+        }
+
+        /* Horizontal Scrolling Wrapper */
+        .scroll-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 15px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.2) transparent;
+        }
+        
+        .scroll-wrapper::-webkit-scrollbar {
+            height: 10px;
+        }
+        .scroll-wrapper::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
+        }
+        .scroll-wrapper::-webkit-scrollbar-thumb {
+            background-color: rgba(108, 92, 231, 0.5);
+            border-radius: 10px;
+        }
+        .scroll-wrapper::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(108, 92, 231, 0.7);
+        }
+
+        /* Specific Table Styles */
+        .data-column {
+            background: rgba(255,255,255,0.6);
+            border-radius: 12px;
+            padding: 12px 15px;
+            min-width: 120px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .data-column h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 6px;
+            color: var(--accent-color);
+            font-size: 0.95rem;
+        }
+
+        .data-item {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .data-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Power Table Specifics - INCREASED MARGINS AND WIDTH */
+        .power-table-container {
+            display: flex;
+            gap: 20px;
+            min-width: max-content;
+            padding-right: 20px;
+        }
+        
+        .power-col {
+            background: rgba(255,255,255,0.6);
+            padding: 15px 20px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 140px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        
+        .power-header {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            display: block;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .power-col .data-item {
+            padding: 6px 5px;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+        }
+
+        .power-col .data-item b {
+            color: #2d3436;
+            font-size: 1rem;
+        }
+
+        /* Placeholder text */
+        .placeholder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #777;
+            font-style: italic;
+            font-size: 1rem;
+        }
+
+        /* Back Button Style */
+        .back-home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-bottom: 4px solid rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .back-home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+        }
+
+        .back-home-btn:active {
+            transform: translateY(1px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .back-home-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .glass-btn {
+                padding: 10px 14px;
+                font-size: 0.85rem;
+            }
+            
+            .math-tables-container h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <!-- HOME SCREEN -->
+    <div id="scr-home">
+        <h1 class="main-title">Banking Practice</h1>
+        <p style="color: #64748b; margin-bottom: 30px;">Daily Speed Drills by SBR </p>
+        <div class="db-grid">
+            <button class="subject-btn" style="border-bottom-color: #8b5cf6" onclick="showCalcMenu()">🧮 CALCULATION</button>
+            <button class="subject-btn" style="border-bottom-color: var(--blue)" onclick="openConfig('Square')">2️⃣ SQUARES</button>
+            <button class="subject-btn" style="border-bottom-color: var(--pink)" onclick="openConfig('Cube')">3️⃣ CUBES</button>
+            <button class="subject-btn" style="border-bottom-color: var(--green)" onclick="openConfig('Table')">📊 TABLES</button>
+            <button class="subject-btn" style="border-bottom-color: var(--orange)" onclick="openConfig('Power')">🔢 POWERS</button>
+            <button class="subject-btn" style="border-bottom-color: #ef4444" onclick="openConfig('Alphabet')">🆎 ALPHABET</button>
+            <button class="subject-btn" style="border-bottom-color: #ec4899" onclick="openConfig('Percentage')">💯 PERCENTAGE</button>
+            <button class="subject-btn" style="border-bottom-color: #06b6d4" onclick="openConfig('Mensuration')">📐 MENSURATION</button>
+            <button class="subject-btn" style="border-bottom-color: #6c5ce7; background: linear-gradient(135deg, #f5f3ff, #ede9fe);" onclick="showMathTables()">📚 REFERENCE TABLES</button>
+        </div>
+    </div>
+
+    <!-- CALCULATION MENU -->
+    <div id="scr-calc-menu" class="hidden">
+        <div class="home-icon-btn" onclick="goHome()"> 🏠 Back to Home</div>
+        <h1 class="quiz-title">CALCULATION 🧮</h1>
+        <div class="db-grid">
+            <button class="subject-btn" style="border-bottom-color: var(--blue)" onclick="openConfig('Addition')">Addition ➕</button>
+            <button class="subject-btn" style="border-bottom-color: var(--danger)" onclick="openConfig('Subtraction')">Subtraction ➖</button>
+            <button class="subject-btn" style="border-bottom-color: var(--orange)" onclick="openConfig('Multiplication')">Multiplication ✖️</button>
+            <button class="subject-btn" style="border-bottom-color: var(--green)" onclick="openConfig('Division')">Division ➗</button>
+        </div>
+    </div>
+
+    <!-- CONFIG SCREEN -->
+    <div id="scr-config" class="hidden">
+        <div class="home-icon-btn" onclick="goHome()"> 🏠 Back to Home</div>
+        <h1 class="quiz-title" id="cfg-title">Title</h1>
+
+        <label class="label-text">Number of Questions</label>
+        <div class="white-card">
+            <input type="range" min="10" max="100" step="10" value="20" class="slider" id="q-slider" oninput="document.getElementById('q-val').innerText = this.value">
+            <div id="q-val" style="font-family: var(--calibri); color: var(--orange); font-size: 1.5rem; font-weight: bold; margin-top: 10px;">20</div>
+        </div>
+
+        <div id="range-settings">
+            <label class="label-text">Range (Digits for Calc)</label>
+            <div class="white-card">
+                <div style="display:flex; justify-content:center; gap:10px; align-items:center;">
+                    <small>MIN</small> <input type="number" id="cfg-from" class="styled-input" value="1">
+                    <small>MAX</small> <input type="number" id="cfg-to" class="styled-input" value="1000">
+                </div>
+            </div>
+        </div>
+
+        <div id="alpha-settings" class="hidden">
+            <label class="label-text">Alphabet Mode</label>
+            <div class="mode-row">
+                <button class="subject-btn" id="btn-alpha-pos" onclick="setAlphaMode('pos')">Position (A-1)</button>
+                <button class="subject-btn" id="btn-alpha-opp" onclick="setAlphaMode('opp')">Opposite (A-Z)</button>
+            </div>
+        </div>
+
+        <div id="mens-settings" class="hidden">
+            <label class="label-text">Category</label>
+            <div class="mode-row">
+                <button class="subject-btn" id="btn-m2d" onclick="setMens('2d')">2D Formulas</button>
+                <button class="subject-btn" id="btn-m3d" onclick="setMens('3d')">3D Formulas</button>
+            </div>
+        </div>
+
+        <button class="primary-btn" onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="scr-quiz" class="hidden">
+        <div id="pause-overlay" class="hidden">
+            <h1 class="quiz-title">PAUSED</h1>
+            <button class="primary-btn" style="width: 220px; margin-bottom: 12px; border-bottom-color: var(--green);" onclick="resumeQuiz()">RESUME</button>
+            <button class="primary-btn" style="width: 220px; border-bottom-color: #64748b; color: #64748b;" onclick="goHome()">HOME</button>
+        </div>
+
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div class="timer-pill">⏱️ <span id="timer">00:00</span></div>
+            <button class="btn-pause" onclick="pauseQuiz()">Pause</button>
+        </div>
+        
+        <div class="white-card" style="text-align: left;">
+            <small style="color: #94a3b8; font-family: var(--calibri); font-weight: bold;" id="q-progress">Q 1/20</small>
+            <div class="q-text" id="q-display">...</div>
+        </div>
+
+        <div id="opt-container"></div>
+
+        <div class="nav-grid">
+            <button class="btn-prev" onclick="navQ('prev')">PREVIOUS</button>
+            <button class="btn-next" onclick="navQ('next')">NEXT</button>
+        </div>
+        <button class="primary-btn" style="margin-top: 15px; background: #eff6ff; border-bottom-color: var(--blue);" onclick="finishQuiz()">SUBMIT TEST</button>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="scr-result" class="hidden">
+        <div id="res-emoji" style="font-size: 3.5rem;">🎉</div>
+        <h1 class="quiz-title" id="res-rating">Excellent</h1>
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+            <div class="res-pill"><span class="res-val" id="res-cor" style="color: var(--green)">0</span><small>CORRECT</small></div>
+            <div class="res-pill"><span class="res-val" id="res-inc" style="color: #ef4444">0</span><small>WRONG</small></div>
+            <div class="res-pill"><span class="res-val" id="res-skp" style="color: #64748b">0</span><small>SKIPPED</small></div>
+        </div>
+
+        <div class="white-card" style="display: grid; grid-template-columns: 1fr 1fr; gap:10px; font-family: var(--calibri);">
+            <div>ACCURACY<br><strong id="res-acc" style="color: var(--blue); font-size: 1.2rem;">0%</strong></div>
+            <div>TIME<br><strong id="res-time" style="font-size: 1.2rem;">00:00</strong></div>
+            <div style="grid-column: span 2; border-top: 1px solid #eee; padding-top: 10px;">AVG TIME/QUE<br><strong id="res-avg" style="color: var(--pink)">0s</strong></div>
+        </div>
+
+        <div class="nav-grid">
+            <button class="btn-prev" style="background:white; color:#1e293b; border: 1px solid #ddd; border-bottom: 4px solid #ccc;" onclick="goHome()">HOME</button>
+            <button class="btn-next" style="background:var(--blue); border-bottom-color: #1e3a8a;" onclick="toggleSols()">SOLUTIONS</button>
+        </div>
+        <button class="primary-btn" onclick="restartQuiz()" style="margin-top: 15px; background: #f8fafc;">RESTART</button>
+
+        <div id="sol-area" class="hidden" style="margin-top: 30px; text-align: left;">
+            <div id="sol-list"></div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MATH REFERENCE TABLES SCREEN -->
+    <!-- ============================================ -->
+    <div id="scr-math-tables" class="hidden">
+        <div class="math-tables-container">
+            
+            <!-- Back to Home Button -->
+            <div style="text-align: left;">
+                <button class="back-home-btn" onclick="goHome()">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                    </svg>
+                    Back to Home
+                </button>
+            </div>
+
+            <h1>📐 Reference Tables</h1>
+
+            <div class="math-btn-group">
+                <button class="glass-btn" id="btn-squares" onclick="showSquares()">Squares (1-150)</button>
+                <button class="glass-btn" id="btn-cubes" onclick="showCubes()">Cubes (1-30)</button>
+                <button class="glass-btn" id="btn-tables" onclick="showTables()">Tables (1-50)</button>
+                <button class="glass-btn" id="btn-powers" onclick="showPowers()">Powers (2-10)</button>
+            </div>
+
+            <div class="display-area">
+                <div class="scroll-wrapper" id="math-output">
+                    <div class="placeholder">👆 Select a button above to view the table</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let mode = ''; let questions = []; let currentIdx = 0;
+    let timer; let seconds = 0; let isPaused = false;
+    let mensCategory = '2d'; let alphaMode = 'pos';
+    let lastQ = "";
+
+    const percDB = [
+    {p: "100%", f: "1/1"}, {p: "200%", f: "2/1"}, {p: "50%", f: "1/2"}, {p: "150%", f: "3/2"}, {p: "250%", f: "5/2"}, {p: "33.33%", f: "1/3"}, {p: "66.66%", f: "2/3"}, {p: "133.33%", f: "4/3"}, {p: "25%", f: "1/4"}, {p: "75%", f: "3/4"}, {p: "125%", f: "5/4"}, {p: "175%", f: "7/4"}, {p: "225%", f: "9/4"}, {p: "275%", f: "11/4"}, {p: "20%", f: "1/5"}, {p: "40%", f: "2/5"}, {p: "60%", f: "3/5"}, {p: "80%", f: "4/5"}, {p: "120%", f: "6/5"}, {p: "140%", f: "7/5"}, {p: "16.66%", f: "1/6"}, {p: "83.33%", f: "5/6"}, {p: "116.66%", f: "7/6"}, {p: "14.28%", f: "1/7"}, {p: "28.56%", f: "2/7"}, {p: "42.84%", f: "3/7"}, {p: "57.14%", f: "4/7"}, {p: "71.42%", f: "5/7"}, {p: "85.71%", f: "6/7"}, {p: "12.5%", f: "1/8"}, {p: "37.5%", f: "3/8"}, {p: "62.5%", f: "5/8"}, {p: "87.5%", f: "7/8"}, {p: "11.11%", f: "1/9"}, {p: "22.22%", f: "2/9"}, {p: "44.44%", f: "4/9"}, {p: "55.55%", f: "5/9"}, {p: "77.77%", f: "7/9"}, {p: "88.88%", f: "8/9"}, {p: "10%", f: "1/10"}, {p: "30%", f: "3/10"}, {p: "9.09%", f: "1/11"}, {p: "18.18%", f: "2/11"}, {p: "27.27%", f: "3/11"}, {p: "36.36%", f: "4/11"}, {p: "45.45%", f: "5/11"}, {p: "54.54%", f: "6/11"}, {p: "63.63%", f: "7/11"}, {p: "72.72%", f: "8/11"}, {p: "81.81%", f: "9/11"}, {p: "90.9%", f: "10/11"}, {p: "8.33%", f: "1/12"}, {p: "41.66%", f: "5/12"}, {p: "58.33%", f: "7/12"}, {p: "91.66%", f: "11/12"}, {p: "7.69%", f: "1/13"}, {p: "15.38%", f: "2/13"}, {p: "23.07%", f: "3/13"}, {p: "30.76%", f: "4/13"}, {p: "38.46%", f: "5/13"}, {p: "46.14%", f: "6/13"}, {p: "7.14%", f: "1/14"}, {p: "21.42%", f: "3/14"}, {p: "35.70%", f: "5/14"},
+{p: "64.28%", f: "9/14"}, {p: "78.54%", f: "11/14"}, {p: "92.82%", f: "13/14"}, {p: "6.66%", f: "1/15"}, {p: "13.33%", f: "2/15"}, {p: "26.66%", f: "4/15"}, {p: "39.99%", f: "6/15"}, {p: "46.66%", f: "7/15"}, {p: "53.33%", f: "8/15"}, {p: "59.99%", f: "9/15"}, {p: "73.33%", f: "11/15"}, {p: "86.66%", f: "13/15"}, {p: "93.33%", f: "14/15"}, {p: "6.25%", f: "1/16"}, {p: "18.75%", f: "3/16"}, {p: "31.25%", f: "5/16"}, {p: "43.75%", f: "7/16"}, {p: "56.25%", f: "9/16"}, {p: "68.75%", f: "11/16"}, {p: "81.25%", f: "13/16"}, {p: "93.75%", f: "15/16"}, {p: "5.55%", f: "1/18"}, {p: "27.75%", f: "5/18"}, {p: "38.88%", f: "7/18"}, {p: "5%", f: "1/20"}, {p: "15%", f: "3/20"}, {p: "4%", f: "1/25"}, {p: "8%", f: "2/25"}, {p: "12%", f: "3/25"}, {p: "3.33%", f: "1/30"}, {p: "17.5%", f: "7/40"}, {p: "7.5%", f: "3/40"}, {p: "32.5%", f: "13/40"}, {p: "22.5%", f: "9/40"}, {p: "27.5%", f: "11/40"}, {p: "2%", f: "1/50"}
+    ];
+
+    const mensDB = {
+        "2d": [{f:"4a/4(side)", q:"Perimeter of Square"}, {f:"side²", q:"Area of Square"}, {f:"√2side", q:"Diagonal of Square"}, {f:"2(l+b)", q:"Perimeter of Rectangle"}, {f:"l×b", q:"Area of Rectangle"}, {f:"√l²+b²", q:"Diagonal of Rectangle"}, {f:"½×b×h", q:"Area of Triangle"}, {f:"√s(s-a)(s-b)(s-c)", q:"Heron's Formula"},{f:"√3/4 a²", q:"Area of Equilateral Triangle"},{f:"√3/2 a", q:"Height of Equilateral Triangle"}, {f:"½a²", q:"Area of Isosceles Triangle"}, {f:"½×a×b", q:"Area of Right Angled Triangle"}, {f:"Base×Perpendicular height", q:"Area of Parallelogram"}, {f:"½×d₁×d₂", q:"Area of Rhombus"}, {f:"½×(Sum of parallel sides)×Height", q:"Area of Trapezium"}, {f:"2πr", q:"Circumference of Circle"}, {f:"πr²", q:"Area of Circle"}, {f:"θ/360×πr²", q:"Area of Sector"}, {f:"θ/360×2πr", q:"Arc length of Sector"}],
+        "3d": [{f:"a³", q:"Volume of Cube"}, {f:"4a²", q:"LSA of Cube"}, {f:"6a²", q:"TSA of Cube"}, {f:"a√3", q:"Diagonal of Cube"}, {f:"l×b×h", q:"Volume of Cuboid"}, {f:"2h(l+b)", q:"LSA of Cuboid"}, {f:"2(lb+bh+hl)", q:"TSA of Cuboid"}, {f:"√l²+b²+h²", q:"Diagonal of Cuboid"}, {f:"πr²h", q:"Volume of Cylinder"}, {f:"2πrh", q:"CSA of Cylinder"}, {f:"2πr(r+h)", q:"TSA of Cylinder"}, {f:"⅓πr²h", q:"Volume of Cone"}, {f:"πrl", q:"CSA of Cone"}, {f:"πr(l+r)", q:"TSA of Cone"}, {f:"4/3πr³", q:"Volume of Sphere"}, {f:"4πr²", q:"Surface Area of Sphere"}, {f:"⅔πr³", q:"Volume of Hemisphere"}, {f:"2πr²", q:"CSA of Hemisphere"}, {f:"3πr²", q:"TSA of Hemisphere"}, {f:"⅓πh(R²+r²+Rr)", q:"Volume of Frustum of Cone"}, {f:"πl(R+r)", q:"CSA of Frustum of Cone"}, {f:"4/3π(R³+r³)", q:"Volume of Hollow Sphere"}
+]
+    };
+
+    function goHome() {
+        clearInterval(timer);
+        document.querySelectorAll('.app-container > div').forEach(d => d.classList.add('hidden'));
+        document.getElementById('scr-home').classList.remove('hidden');
+    }
+
+    function showCalcMenu() {
+        document.getElementById('scr-home').classList.add('hidden');
+        document.getElementById('scr-calc-menu').classList.remove('hidden');
+    }
+
+    // Show Math Reference Tables Screen
+    function showMathTables() {
+        document.querySelectorAll('.app-container > div').forEach(d => d.classList.add('hidden'));
+        document.getElementById('scr-math-tables').classList.remove('hidden');
+        // Reset output
+        document.getElementById('math-output').innerHTML = '<div class="placeholder">👆 Select a button above to view the table</div>';
+        // Reset active buttons
+        document.querySelectorAll('.glass-btn').forEach(btn => btn.classList.remove('active'));
+    }
+
+    function openConfig(m) {
+        mode = m;
+        document.querySelectorAll('.app-container > div').forEach(d => d.classList.add('hidden'));
+        document.getElementById('scr-config').classList.remove('hidden');
+        document.getElementById('cfg-title').innerText = m.toUpperCase();
+        
+        document.getElementById('range-settings').classList.toggle('hidden', ['Percentage', 'Alphabet', 'Mensuration'].includes(m));
+        document.getElementById('alpha-settings').classList.toggle('hidden', m !== 'Alphabet');
+        document.getElementById('mens-settings').classList.toggle('hidden', m !== 'Mensuration');
+
+        // Set default values for different calculation types
+        if(m === 'Division') {
+            document.getElementById('cfg-from').value = 1;
+            document.getElementById('cfg-to').value = 9999;
+        } else if(['Addition','Subtraction','Multiplication'].includes(m)) {
+            document.getElementById('cfg-to').value = 1000;
+        } else {
+            document.getElementById('cfg-to').value = 30;
+        }
+    }
+
+    function startQuiz() {
+        generateQuestions();
+        currentIdx = 0; seconds = 0; isPaused = false;
+        document.getElementById('scr-config').classList.add('hidden');
+        document.getElementById('scr-quiz').classList.remove('hidden');
+        startTimer();
+        showQuestion();
+    }
+
+    function startTimer() {
+        timer = setInterval(() => { 
+            if(!isPaused) { 
+                seconds++; 
+                document.getElementById('timer').innerText = new Date(seconds * 1000).toISOString().substr(14, 5); 
+            }
+        }, 1000);
+    }
+
+    function pauseQuiz() { isPaused = true; document.getElementById('pause-overlay').classList.remove('hidden'); }
+    function resumeQuiz() { isPaused = false; document.getElementById('pause-overlay').classList.add('hidden'); }
+
+    function getRandomRange(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateQuestions() {
+        const count = parseInt(document.getElementById('q-slider').value);
+        const min = parseInt(document.getElementById('cfg-from').value);
+        const max = parseInt(document.getElementById('cfg-to').value);
+        questions = [];
+
+        for(let i=0; i<count; i++) {
+            let q = '', a = '', opts = [];
+            let n1 = getRandomRange(min, max);
+            let n2 = getRandomRange(min, max);
+
+            if(mode === 'Addition') { q = `${n1} + ${n2} = ?`; a = (n1 + n2).toString(); }
+            else if(mode === 'Subtraction') { 
+                let big = Math.max(n1, n2); let small = Math.min(n1, n2);
+                q = `${big} - ${small} = ?`; a = (big - small).toString(); 
+            }
+            else if(mode === 'Multiplication') { q = `${n1} × ${n2} = ?`; a = (n1 * n2).toString(); }
+            else if(mode === 'Division') {
+                let divDigits = getRandomRange(1, 3);
+                let quoDigits = getRandomRange(1, 4 - (divDigits - 1));
+                let divisor = getRandomRange(Math.pow(10, divDigits-1), Math.pow(10, divDigits)-1);
+                let quotient = getRandomRange(Math.pow(10, quoDigits-1), Math.pow(10, quoDigits)-1);
+                let dividend = divisor * quotient;
+                q = `${dividend} ÷ ${divisor} = ?`; a = quotient.toString();
+            }
+            else if(mode === 'Square') { q = `Square of ${n1}?`; a = (n1*n1).toString(); }
+            else if(mode === 'Cube') { q = `Cube of ${n1}?`; a = (n1*n1*n1).toString(); }
+            else if(mode === 'Table') { let m = getRandomRange(1, 10); q = `${n1} x ${m} = ?`; a = (n1*m).toString(); }
+            else if(mode === 'Percentage') {
+                let item = percDB[getRandomRange(0, percDB.length-1)];
+                q = `What is the fraction of ${item.p}?`; a = item.f;
+            }
+            else if(mode === 'Alphabet') {
+                let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; let idx = getRandomRange(0, 25);
+                if(alphaMode === 'pos') { q = `Position of '${chars[idx]}'?`; a = (idx+1).toString(); }
+                else { q = `Opposite of '${chars[idx]}'?`; a = chars[25-idx]; }
+            }
+            else if(mode === 'Mensuration') {
+                let pool = mensCategory==='2d' ? mensDB["2d"] : mensDB["3d"];
+                let item = pool[getRandomRange(0, pool.length-1)];
+                q = `${item.f} is formula for:`; a = item.q;
+            }
+
+            opts = [a];
+            while(opts.length < 4) {
+                let fake = (parseInt(a) + (getRandomRange(-10, 10))).toString();
+                if(mode==='Percentage') fake = percDB[getRandomRange(0, percDB.length-1)].f;
+                if(mode==='Mensuration') {
+                    let all = [...mensDB["2d"], ...mensDB["3d"]];
+                    fake = all[getRandomRange(0, all.length-1)].q;
+                }
+                if(!opts.includes(fake) && fake !== "" && parseInt(fake) !== -1) opts.push(fake);
+            }
+            questions.push({ q, a, opts: opts.sort(() => Math.random()-0.5), user: null });
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIdx];
+        document.getElementById('q-progress').innerText = `Q ${currentIdx+1} / ${questions.length}`;
+        document.getElementById('q-display').innerText = q.q;
+        const cont = document.getElementById('opt-container'); cont.innerHTML = '';
+        q.opts.forEach(o => {
+            const b = document.createElement('button'); b.className = `opt-btn ${q.user === o ? 'selected' : ''}`;
+            b.innerText = o; b.onclick = () => { q.user = o; showQuestion(); };
+            cont.appendChild(b);
+        });
+    }
+
+    function navQ(dir) {
+        if(dir === 'next' && currentIdx < questions.length - 1) { currentIdx++; showQuestion(); }
+        else if(dir === 'prev' && currentIdx > 0) { currentIdx--; showQuestion(); }
+    }
+
+    function finishQuiz() {
+        clearInterval(timer);
+        document.getElementById('scr-quiz').classList.add('hidden');
+        document.getElementById('scr-result').classList.remove('hidden');
+        
+        const cor = questions.filter(q => q.user === q.a).length;
+        const skp = questions.filter(q => q.user === null).length;
+        const acc = Math.round((cor/questions.length)*100);
+        
+        document.getElementById('res-cor').innerText = cor;
+        document.getElementById('res-inc').innerText = questions.length - cor - skp;
+        document.getElementById('res-skp').innerText = skp;
+        document.getElementById('res-acc').innerText = acc + "%";
+        document.getElementById('res-time').innerText = document.getElementById('timer').innerText;
+        document.getElementById('res-avg').innerText = (seconds/questions.length).toFixed(1) + "s";
+
+        let r = '', e = '';
+        if(acc < 35) { r = 'Need Improvement'; e = '🔥'; }
+        else if(acc < 60) { r = 'Average'; e = '👍🏻'; }
+        else if(acc < 85) { r = 'Good Score'; e = '✌🏻'; }
+        else { r = 'Excellent'; e = '🎉'; }
+        document.getElementById('res-rating').innerText = r;
+        document.getElementById('res-emoji').innerText = e;
+    }
+
+    function toggleSols() {
+        const area = document.getElementById('sol-area'); area.classList.toggle('hidden');
+        document.getElementById('sol-list').innerHTML = questions.map((q, i) => `
+            <div style="padding:15px; background:white; border-radius:15px; margin-bottom:10px; border-left:5px solid ${q.user===q.a?'var(--green)':'#ef4444'}">
+                <strong>${i+1}. ${q.q}</strong><br>Correct: ${q.a} | Your: ${q.user || 'Skipped'}
+            </div>
+        `).join('');
+    }
+
+    function restartQuiz() {
+        document.getElementById('scr-result').classList.add('hidden');
+        openConfig(mode);
+    }
+    
+    function setAlphaMode(val) { alphaMode = val; startQuiz(); }
+    function setMens(val) { mensCategory = val; startQuiz(); }
+
+    // ============================================
+    // MATH REFERENCE TABLES FUNCTIONS
+    // ============================================
+    
+    const mathOutput = document.getElementById('math-output');
+    const fmt = (n) => n.toLocaleString();
+
+    function setActiveBtn(btnId) {
+        document.querySelectorAll('.glass-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(btnId).classList.add('active');
+    }
+
+    // 1. Squares 1 to 150
+    function showSquares() {
+        setActiveBtn('btn-squares');
+        let html = '<div style="display:flex; gap: 15px; min-width: max-content; padding-right:15px;">';
+        
+        for (let i = 1; i <= 150; i += 10) {
+            html += `<div class="data-column">
+                        <h3>${i} - ${Math.min(i+9, 150)}</h3>`;
+            for (let j = i; j < i + 10 && j <= 150; j++) {
+                html += `<div class="data-item">${j}² = <b>${fmt(j*j)}</b></div>`;
+            }
+            html += `</div>`;
+        }
+        
+        html += '</div>';
+        mathOutput.innerHTML = html;
+    }
+
+    // 2. Cubes 1 to 30
+    function showCubes() {
+        setActiveBtn('btn-cubes');
+        let html = '<div style="display:flex; gap: 15px; min-width: max-content; padding-right:15px;">';
+        
+        for (let i = 1; i <= 30; i += 10) {
+            html += `<div class="data-column" style="min-width: 140px;">
+                        <h3>${i} - ${Math.min(i+9, 30)}</h3>`;
+            for (let j = i; j < i + 10 && j <= 30; j++) {
+                html += `<div class="data-item">${j}³ = <b>${fmt(j*j*j)}</b></div>`;
+            }
+            html += `</div>`;
+        }
+        
+        html += '</div>';
+        mathOutput.innerHTML = html;
+    }
+
+    // 3. Tables (Multiplication) 1-50
+    function showTables() {
+        setActiveBtn('btn-tables');
+        let html = '<div style="display:flex; gap: 18px; min-width: max-content; padding-right:15px; align-items: flex-start;">';
+
+        for (let base = 1; base <= 50; base++) {
+            html += `<div class="data-column">
+                        <h3>Table of ${base}</h3>`;
+            for (let mult = 1; mult <= 10; mult++) {
+                html += `<div class="data-item">${base} × ${mult} = <b>${fmt(base*mult)}</b></div>`;
+            }
+            html += `</div>`;
+        }
+
+        html += '</div>';
+        mathOutput.innerHTML = html;
+    }
+
+    // 4. Powers (2 to 10) ^ (0 to 10) - INCREASED WIDTH & MARGINS
+    function showPowers() {
+        setActiveBtn('btn-powers');
+        let html = '<div class="power-table-container">';
+
+        for (let base = 2; base <= 10; base++) {
+            html += `<div class="power-col">
+                        <span class="power-header">Base ${base}</span>`;
+            for (let exp = 0; exp <= 10; exp++) {
+                let result = Math.pow(base, exp);
+                html += `<div class="data-item">${base}<sup>${exp}</sup> = <b>${fmt(result)}</b></div>`;
+            }
+            html += `</div>`;
+        }
+
+        html += '</div>';
+        mathOutput.innerHTML = html;
+    }
+</script>
+
+</body>
+</html>
